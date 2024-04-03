@@ -1,40 +1,132 @@
-let nombre = prompt("Ingrese su nombre aqui");
+const todoInput = document.querySelector(".todo-input");
+const todoButton = document.querySelector(".todo-button");
+const todoList = document.querySelector(".todo-list");
+const filterOption = document.querySelector(".filter-todo");
 
-    let magic = 12000;
-    let skylar = 17000;
-    let ultraviolet = 20000;
-    let estellar = 17500;
+document.addEventListener("DOMContentLoaded", getLocalTodos);
+todoButton.addEventListener("click", addTodo);
+todoList.addEventListener("click", deleteCheck);
+filterOption.addEventListener("change", filterTodo);
 
-alert("Bienvenida " + nombre);
+function addTodo(event) {
+    event.preventDefault();
+    const todoDiv = document.createElement("div");
+    todoDiv.classList.add("todo");
+    const newTodo = document.createElement("li");
+    newTodo.innerText = todoInput.value; 
+    newTodo.classList.add("todo-item");
+    todoDiv.appendChild(newTodo);
+    //
+    
+    saveLocalTodos(todoInput.value);
+    
+    const completedButton = document.createElement("button");
+    completedButton.innerHTML = '<i class="fas fa-check-circle"></li>';
+    completedButton.classList.add("complete-btn");
+    todoDiv.appendChild(completedButton);
 
-let pedir = prompt("¿Ya sabe cual va a ser su pedido? Ingrese SI o NO");
-
-if ((pedir === "no") || (pedir === "No") || (pedir === "NO")){
-    alert ("Esperemos que regrese pronto. No se pierda de nuestros glosses!");
-} else {
-    let orden = prompt ("Ingrese su pedido. Cual va a ser el gloss de su eleccion magic, skylar, ultraviolet, estellar.");
-
-switch (orden){
-    case "magic":
-        alert ("Gracias por su pedido. Su total es de: $ " + magic );
-        agradecer ()
-        break; 
-    case "skylar":
-        alert ("Gracias por su pedido. Su total es de: $ " + skylar );
-        agradecer ()
-        break; 
-    case "ultraviolet":
-        alert ("Gracias por su pedido. Su total es de: $ " + ultraviolet );
-        agradecer ()
-        break;
-    case "estellar":
-        alert ("Gracias por su pedido. Su total es de: $ " + estellar );
-        agradecer ()
-        break; 
-        
+    const trashButton = document.createElement("button");
+    trashButton.innerHTML = '<i class="fas fa-trash"></li>';
+    trashButton.classList.add("trash-btn");
+    todoDiv.appendChild(trashButton);
+    
+    todoList.appendChild(todoDiv);
+    todoInput.value = "";
 }
+
+function deleteCheck(e) {
+    const item = e.target;
+
+    if(item.classList[0] === "trash-btn") {
+        const todo = item.parentElement;
+        todo.classList.add("slide");
+
+        removeLocalTodos(todo);
+        todo.addEventListener("transitionend", function() {
+            todo.remove();
+        });
+    }
+
+    if(item.classList[0] === "complete-btn") {
+        const todo = item.parentElement;
+        todo.classList.toggle("completed");
+    }
 }
 
-function agradecer (){
-    alert (nombre + ", ya hemos procesado su pedido. Se encuentra en preparacion, pronto sera contactado. Gracias por elegirnos!!!")
-} 
+function filterTodo(e) {
+    const todos = todoList.childNodes;
+    todos.forEach(function(todo) {
+        switch(e.target.value) {
+            case "all": 
+                todo.style.display = "flex";
+                break;
+            case "completed": 
+                if(todo.classList.contains("completed")) {
+                    todo.style.display = "flex";
+                } else {
+                    todo.style.display = "none";
+                }
+                break;
+            case "incomplete":
+                if(!todo.classList.contains("completed")) {
+                    todo.style.display = "flex";
+                } else {
+                    todo.style.display = "none";
+                }
+                break;
+        }
+    });
+}
+
+function saveLocalTodos(todo) {
+    let todos;
+    if(localStorage.getItem("todos") === null) {
+        todos = [];
+    } else {
+        todos = JSON.parse(localStorage.getItem("todos"));
+    }
+    todos.push(todo);
+    localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+function getLocalTodos() {
+    let todos;
+    if(localStorage.getItem("todos") === null) {
+        todos = [];
+    } else {
+        todos = JSON.parse(localStorage.getItem("todos"));
+    }
+    todos.forEach(function(todo) {
+        const todoDiv = document.createElement("div");
+        todoDiv.classList.add("todo");
+        const newTodo = document.createElement("li");
+        newTodo.innerText = todo;
+        newTodo.classList.add("todo-item");
+        todoDiv.appendChild(newTodo);
+
+        const completedButton = document.createElement("button");
+        completedButton.innerHTML = '<i class="fas fa-check-circle"></li>';
+        completedButton.classList.add("complete-btn");
+        todoDiv.appendChild(completedButton);
+
+        const trashButton = document.createElement("button");
+        trashButton.innerHTML = '<i class="fas fa-trash"></li>';
+        trashButton.classList.add("trash-btn");
+        todoDiv.appendChild(trashButton);
+
+        todoList.appendChild(todoDiv);
+    });
+}
+
+function removeLocalTodos(todo) {
+    let todos;
+    if(localStorage.getItem("todos") === null) {
+        todos = [];
+    } else {
+        todos = JSON.parse(localStorage.getItem("todos"));
+    }
+
+    const todoIndex = todo.children[0].innerText;
+    todos.splice(todos.indexOf(todoIndex), 1);
+    localStorage.setItem("todos", JSON.stringify(todos));
+}
